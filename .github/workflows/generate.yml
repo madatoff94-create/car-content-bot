@@ -24,8 +24,8 @@ jobs:
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       TARGET_CHAT_ID: ${{ github.event.client_payload.chat_id || inputs.chat_id || secrets.TELEGRAM_CHAT_ID }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -37,8 +37,10 @@ jobs:
       - name: Generate 2 car packages
         run: python main.py
       - name: Upload backup artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: car-content-${{ github.run_number }}
           path: work/
+          if-no-files-found: warn
           retention-days: 7
