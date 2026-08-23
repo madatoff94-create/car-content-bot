@@ -1,8 +1,37 @@
 const GITHUB_OWNER = "madatoff94-create";
 const GITHUB_REPO = "car-content-bot";
+const WORKER_URL = "https://car-content-bot.madatoff94.workers.dev";
 
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (request.method === "GET" && url.pathname === "/setup-webhook") {
+      const tg = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/setWebhook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: WORKER_URL,
+          allowed_updates: ["message", "edited_message"],
+          drop_pending_updates: true
+        })
+      });
+      const body = await tg.text();
+      return new Response(body, {
+        status: tg.ok ? 200 : 500,
+        headers: { "Content-Type": "application/json; charset=utf-8" }
+      });
+    }
+
+    if (request.method === "GET" && url.pathname === "/webhook-info") {
+      const tg = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getWebhookInfo`);
+      const body = await tg.text();
+      return new Response(body, {
+        status: tg.ok ? 200 : 500,
+        headers: { "Content-Type": "application/json; charset=utf-8" }
+      });
+    }
+
     if (request.method !== "POST") {
       return new Response("Car Content Bot webhook is alive.", { status: 200 });
     }
