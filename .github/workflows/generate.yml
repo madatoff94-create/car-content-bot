@@ -7,8 +7,12 @@ on:
         description: Telegram chat ID
         required: false
         type: string
+      model:
+        description: V2 car model, e.g. BMW M5 F90
+        required: false
+        type: string
   repository_dispatch:
-    types: [cars_today]
+    types: [cars_today, car_v2]
   schedule:
     - cron: "0 6 * * *"
 
@@ -23,6 +27,8 @@ jobs:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       TARGET_CHAT_ID: ${{ github.event.client_payload.chat_id || inputs.chat_id || secrets.TELEGRAM_CHAT_ID }}
+      CAR_MODEL: ${{ github.event.client_payload.model || inputs.model }}
+      EVENT_TYPE: ${{ github.event.action }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -34,7 +40,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg fonts-dejavu-core
           pip install -r requirements.txt
-      - name: Generate 2 car packages
+      - name: Generate V2 requested car
+        if: github.event.action == 'car_v2' || inputs.model != ''
+        run: python main_v2.py
+      - name: Generate legacy daily packages
+        if: github.event.action != 'car_v2' && inputs.model == ''
         run: python main.py
       - name: Upload backup artifact
         if: always()
