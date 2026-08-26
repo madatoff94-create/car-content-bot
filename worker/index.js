@@ -33,7 +33,7 @@ export default {
     }
 
     if (request.method !== "POST") {
-      return new Response("Car Content Bot webhook is alive.", { status: 200 });
+      return new Response("KARVON4K V2 webhook is alive.", { status: 200 });
     }
 
     let update;
@@ -50,10 +50,18 @@ export default {
     const rawText = (message.text || "").trim();
     const text = rawText.toLowerCase();
 
-    if (text === "/start") {
+    if (text === "/start" || text === "/help") {
       await telegram(env, "sendMessage", {
         chat_id: chatId,
-        text: "🚗 KARVON4K bot tayyor.\n\nV2 buyruq:\n/car BMW M5 F90\n\nEski buyruq:\n/cars today"
+        text: "🚘 KARVON4K V2\n\nMashina modelini yuboring:\n/car BMW M5 F90\n/car Porsche 911\n/car Mercedes-AMG G63\n\n/cars buyrug‘i endi eski 2 ta mashinani generatsiya qilmaydi."
+      });
+      return new Response("ok");
+    }
+
+    if (text === "/cars" || text === "/cars today" || text === "/cars_today") {
+      await telegram(env, "sendMessage", {
+        chat_id: chatId,
+        text: "🚘 V2 da mashinani o‘zingiz tanlaysiz.\nMasalan:\n/car BMW M5 F90\n\nEski Mercedes + BMW paketi o‘chirildi."
       });
       return new Response("ok");
     }
@@ -70,7 +78,7 @@ export default {
 
       await telegram(env, "sendMessage", {
         chat_id: chatId,
-        text: `✅ V2 qabul qilindi.\n🚘 ${model}\n📸 15× premium 4K set\n🎬 1× cinematic Reel\n🔖 KARVON4K branding`
+        text: `✅ V2 qabul qilindi.\n🚘 ${model}\n🎨 Black\n📸 15× premium 4K shot plan\n🎬 1× 4K cinematic Reel\n🔖 KARVON4K branding`
       });
 
       const gh = await dispatchGithub(env, "car_v2", { chat_id: chatId, model });
@@ -82,25 +90,6 @@ export default {
         });
         return new Response(details, { status: 500 });
       }
-      return new Response("ok");
-    }
-
-    if (text === "/cars today" || text === "/cars_today" || text === "/cars") {
-      await telegram(env, "sendMessage", {
-        chat_id: chatId,
-        text: "✅ Qabul qilindi. 2 ta 4K karusel + 2 ta Reels generatsiyasi ishga tushirildi."
-      });
-
-      const gh = await dispatchGithub(env, "cars_today", { chat_id: chatId });
-      if (!gh.ok) {
-        const details = await gh.text();
-        await telegram(env, "sendMessage", {
-          chat_id: chatId,
-          text: "❌ GitHub workflow ishga tushmadi. GITHUB_TOKEN ni tekshiring."
-        });
-        return new Response(details, { status: 500 });
-      }
-
       return new Response("ok");
     }
 
@@ -121,7 +110,7 @@ async function dispatchGithub(env, eventType, clientPayload) {
         "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
-        "User-Agent": "car-content-telegram-worker"
+        "User-Agent": "karvon4k-telegram-worker"
       },
       body: JSON.stringify({
         event_type: eventType,
